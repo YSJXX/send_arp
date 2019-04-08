@@ -15,7 +15,7 @@
 void input(char* argv[],pcap_t *handle,int sw,const u_char *packet)
 {
     struct ether_header * ethhdr = (struct ether_header *) (packet);
-    struct arphdr * arphd = (struct arphdr *) (packet + 14);
+
 
     /*
    //IP check
@@ -81,8 +81,17 @@ void input(char* argv[],pcap_t *handle,int sw,const u_char *packet)
   s_packet[18] = 0x06;
   s_packet[19] = 0x04;
   // OPcode 1 = request ,2 = reply
-  s_packet[20] = 0x00;
-  s_packet[21] = 0x01;
+  switch (sw) {
+  case 1:
+      s_packet[20] = 0x00;
+      s_packet[21] = 0x01;
+      break;
+  case 2:
+      s_packet[20] = 0x00;
+      s_packet[21] = 0x02;
+      break;
+  }
+
   // Sender Mac
   s_packet[22] = s_packet[6];
   s_packet[23] = s_packet[7];
@@ -165,7 +174,8 @@ int main(int argc, char* argv[]) {
         struct ether_header * ethhdr = (struct ether_header *) (packet);
         struct arphdr * arphd = (struct arphdr *) (packet + 14);
 
-        if(ntohs(ethhdr->ether_type) == ETHERTYPE_ARP&& ntohs(arphd->ar_op) == ARPOP_REPLY )
+        if(ntohs(ethhdr->ether_type) == ETHERTYPE_ARP
+                && ntohs(arphd->ar_op) == ARPOP_REPLY )
             input(argv,handle,2,packet);
 
       pcap_close(handle);
